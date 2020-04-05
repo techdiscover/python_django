@@ -1,36 +1,15 @@
-
-#!/usr/bin/python3
 import os
-import sys
 import pandas as pd
-from argparse import ArgumentParser
 
-
-def get_args():
-    """
-     * Get configuration for program execution
-    """
-    parser = ArgumentParser()
-
-    # IO
-    parser.add_argument(
-        '-s', '--sedona', default=None, type=str,
-        help='Fisierul cu date pentru Sedona.')
-
-    parser.add_argument(
-        '-g', '--saga', default=None, type=str,
-        help='Fisierul cu date pentru Saga.')
-
-    parser.add_argument(
-        '-f', '--furnizori', default='furnizori.xls', type=str,
-        help='Fisierul cu date pentru furnizori.')
-
-    parser.add_argument(
-        '-r', '--rezultat', default='aprovizionare.xlsx', type=str,
-        help='Fisierul in care se vor scrie rezultate.')
-
-    return parser.parse_args()
-
+def get_params():
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    print(BASE_DIR)
+    files = []
+    files.append(os.path.join(BASE_DIR, '../uploads/furnizori.xls'))
+    files.append(os.path.join(BASE_DIR, '../uploads/saga.xls'))
+    files.append(os.path.join(BASE_DIR, '../uploads/sedona.xls'))
+    files.append(os.path.join(BASE_DIR, '../uploads/results.xls'))
+    return files
 
 def process(args):
     """
@@ -46,7 +25,7 @@ def process(args):
 
     errors = []
     # read furnizori
-    fdf = pd.read_excel(args.furnizori, converters={'cod': str,
+    fdf = pd.read_excel(args[0], converters={'cod': str,
                                                     'denumire': str,
                                                     'um': str,
                                                     'den_tip': str,
@@ -65,7 +44,7 @@ def process(args):
                                       'cantit maxima': 'max'}).reset_index()
 
     # read saga
-    sdf = pd.read_excel(args.saga, converters={'cod': str,
+    sdf = pd.read_excel(args[1], converters={'cod': str,
                                                'denumire': str,
                                                'um': str,
                                                'den_tip': str})
@@ -82,7 +61,7 @@ def process(args):
                                       'stoc': 'sum'}).reset_index()
 
     # read sedona
-    ddf = pd.read_excel(args.sedona, converters={'Departament': str,
+    ddf = pd.read_excel(args[2], converters={'Departament': str,
                                                  'Produs': str,
                                                  'Cod intern': str,
                                                  'U.M.': str})
@@ -140,7 +119,7 @@ def process(args):
 
     # write output spreadsheet
     # Create a Pandas Excel writer using XlsxWriter as the engine.
-    writer = pd.ExcelWriter(args.rezultat, engine='xlsxwriter')
+    writer = pd.ExcelWriter(args[3], engine='xlsxwriter')
 
     # Write each dataframe to a different worksheet.
     stoc.to_excel(writer, sheet_name='Aprovizionare')
@@ -152,16 +131,16 @@ def process(args):
 
 
 if __name__ == '__main__':
-    args = get_args()
+    args = get_params()
 
-    if args.sedona is None or not os.path.isfile(args.sedona):
-        sys.exit("No am gasit fisierul de date pentru Sedona.")
-
-    if args.saga is None or not os.path.isfile(args.saga):
-        sys.exit("No am gasit fisierul de date pentru Saga.")
-
-    if args.furnizori is None or not os.path.isfile(args.furnizori):
-        sys.exit("No am gasit fisierul de date pentru Furnizatori.")
+    # if args.sedona is None or not os.path.isfile(args.sedona):
+    #     sys.exit("No am gasit fisierul de date pentru Sedona.")
+    #
+    # if args.saga is None or not os.path.isfile(args.saga):
+    #     sys.exit("No am gasit fisierul de date pentru Saga.")
+    #
+    # if args.furnizori is None or not os.path.isfile(args.furnizori):
+    #     sys.exit("No am gasit fisierul de date pentru Furnizatori.")
 
     process(args)
 
